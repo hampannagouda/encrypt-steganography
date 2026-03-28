@@ -1,0 +1,18 @@
+# folders
+input/
+output/
+.vscode/
+venv/
+
+# files
+.env
+
+# binaries
+*.exe
+*.out
+
+# build
+build/
+
+# OS
+.DS_Store
