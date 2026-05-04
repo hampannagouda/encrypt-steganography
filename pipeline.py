@@ -3,12 +3,12 @@ import subprocess
 import sys
 import getpass
 
-ENCRYPT_EXE = os.path.join("cpp", "encrypt.exe")
-STEGO_SCRIPT = os.path.join("python", "stego.py")
+ENCRYPT_EXE = os.path.join("src", "encryption", "encrypt_cli.exe")
+STEGO_SCRIPT = os.path.join("src", "steganography", "stego.py")
 
 def check_dependencies():
     if not os.path.exists(ENCRYPT_EXE):
-        print(f"Error: {ENCRYPT_EXE} not found. Please compile it first.")
+        print(f"Error: {ENCRYPT_EXE} not found. Please run compile_encryption.bat first to build the C++ tool.")
         sys.exit(1)
     if not os.path.exists(STEGO_SCRIPT):
         print(f"Error: {STEGO_SCRIPT} not found.")
@@ -19,34 +19,26 @@ def check_dependencies():
 
 def run_encrypt_tool(choice, input_file, output_file, password):
     """
-    Runs the cpp/encrypt.exe tool interactively via subprocess.
+    Runs the src/encryption/encrypt_cli.exe tool via subprocess.
     choice: '1' for Encrypt, '2' for Decrypt
     """
     try:
-        # We pass the inputs directly to the executable's stdin
-        process = subprocess.Popen(
-            [ENCRYPT_EXE],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+        mode = "encrypt" if choice == '1' else "decrypt"
+        cmd = [ENCRYPT_EXE, mode, input_file, output_file, password]
+        print(f"Running: {' '.join([ENCRYPT_EXE, mode, input_file, output_file, '********'])}")
+        
+        process = subprocess.run(
+            cmd,
+            capture_output=True,
             text=True
         )
         
-        # Build the input string to match what encrypt.cpp expects
-        # 1. choice (1 or 2)
-        # 2. input_file
-        # 3. output_file
-        # 4. password
-        input_data = f"{choice}\n{input_file}\n{output_file}\n{password}\n"
-        
-        stdout, stderr = process.communicate(input=input_data)
-        
         if process.returncode != 0:
             print("Error running encryption tool:")
-            print(stderr)
+            print(process.stderr)
             return False
             
-        print(stdout)
+        print(process.stdout)
         return True
     except Exception as e:
         print(f"Failed to run encryption tool: {e}")
