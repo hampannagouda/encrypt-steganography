@@ -2,8 +2,10 @@ import os
 import subprocess
 import sys
 import getpass
+import platform
 
-ENCRYPT_EXE = os.path.join("src", "encryption", "encrypt_cli.exe")
+ext = ".exe" if platform.system() == "Windows" else ""
+ENCRYPT_EXE = os.path.join("src", "encryption", f"encrypt_cli{ext}")
 STEGO_SCRIPT = os.path.join("src", "steganography", "stego.py")
 
 def check_dependencies():

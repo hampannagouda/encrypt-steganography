@@ -1,12 +1,21 @@
-FROM python:3.10
+FROM python:3.10-slim
 
 WORKDIR /app
 
+# Install build tools and OpenSSL for C++ compilation
+RUN apt-get update && apt-get install -y \
+    g++ \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy project files
 COPY . .
 
-RUN apt-get update && apt-get install -y g++
-RUN g++ cpp/encrypt.cpp -o cpp/encrypt.exe -lcrypto
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN pip install flask
+# Compile C++ encryption tool
+RUN g++ -std=c++17 src/encryption/encrypt_cli.cpp src/encryption/aes_gcm_encrypt.cpp -o src/encryption/encrypt_cli -lcrypto
 
-CMD ["python", "app.py"]
+# Default command to run the interactive pipeline
+CMD ["python", "pipeline.py"]
