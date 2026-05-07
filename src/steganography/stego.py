@@ -199,6 +199,13 @@ def encode(enc_file: str, cover_file: str, output_dir: str):
 
     streamer = BitStreamer(enc_file)
     cover_np = tifffile.imread(cover_file)
+    if cover_np.ndim == 2:
+        cover_np = np.stack([cover_np] * 3, axis=-1)
+    elif cover_np.ndim == 3 and cover_np.shape[-1] == 1:
+        cover_np = np.concatenate([cover_np] * 3, axis=-1)
+    elif cover_np.ndim == 3 and cover_np.shape[-1] == 4:
+        cover_np = cover_np[:, :, :3]
+    
     H, W, _ = cover_np.shape
     print(f"Cover image: {W}x{H} px  |  Payload: {format_size(os.path.getsize(enc_file))}")
 
@@ -407,11 +414,19 @@ def metrics(cover_file: str, stego_file: str, crop_size: int = 1000):
     cover_mmap = tifffile.memmap(cover_file)
     stego_mmap = tifffile.memmap(stego_file)
 
-    H, W, _ = cover_mmap.shape
+    H, W = cover_mmap.shape[:2]
     cy, cx = H // 2, W // 2
     print(f"Extracting {crop_size * 2}×{crop_size * 2} centre crop...")
     cover_crop = cover_mmap[cy - crop_size:cy + crop_size,
                             cx - crop_size:cx + crop_size].copy()
+    
+    if cover_crop.ndim == 2:
+        cover_crop = np.stack([cover_crop] * 3, axis=-1)
+    elif cover_crop.ndim == 3 and cover_crop.shape[-1] == 1:
+        cover_crop = np.concatenate([cover_crop] * 3, axis=-1)
+    elif cover_crop.ndim == 3 and cover_crop.shape[-1] == 4:
+        cover_crop = cover_crop[:, :, :3]
+
     stego_crop = stego_mmap[cy - crop_size:cy + crop_size,
                             cx - crop_size:cx + crop_size].copy()
 
