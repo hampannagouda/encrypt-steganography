@@ -3,7 +3,7 @@ FROM python:3.10-slim-bookworm
 WORKDIR /app
 
 # Install build tools and OpenSSL for C++ compilation
-RUN apt-get update && apt-get install -y \
+RUN apt-get -o Acquire::Check-Valid-Until=false -o Acquire::Check-Date=false update && apt-get install -y \
     g++ \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
